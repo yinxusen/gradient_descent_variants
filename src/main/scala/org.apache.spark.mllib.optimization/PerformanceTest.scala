@@ -198,7 +198,6 @@ object PerformanceTest {
 
     //-------------------------------------------------------------------------------------------
 
-    /*
     begin = System.nanoTime
     var model3 = LassoWithSGD.train(data, args(3).toInt * 10, args(2).toDouble, 1.0)
     end = System.nanoTime
@@ -213,7 +212,6 @@ object PerformanceTest {
     model3 = LassoLargeMemory.train(data, args(3).toInt, args(2).toDouble, 1.0)
     end = System.nanoTime
     println(s"Lasso large memory total ${(end-begin)/10.0e9}")
-    */
 
     sc.stop()
   }
