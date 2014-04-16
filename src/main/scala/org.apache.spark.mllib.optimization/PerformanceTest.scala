@@ -103,6 +103,29 @@ object PerformanceTest {
       new SVMLargeMemory(stepSize, numIterations, 0.0, miniBatchFraction).run(input)
   }
 
+   class LassoWithSGDAnother(
+      var localstepSize: Double,
+      var localnumIterations: Int,
+      var localregParam: Double,
+      var localminiBatchFraction: Double)
+  extends LassoWithSGD {
+    def this() = this(1.0, 100, 1.0, 1.0)
+    @transient override val optimizer = new GradientDescentAnother(new LeastSquaresGradient(), new L1Updater())
+      .setStepSize(localstepSize)
+      .setNumIterations(localnumIterations)
+      .setRegParam(localregParam)
+      .setMiniBatchFraction(localminiBatchFraction)
+  }
+
+  object LassoWithSGDAnother {
+    def train(input: RDD[LabeledPoint],
+              numIterations: Int,
+              stepSize: Double,
+              miniBatchFraction: Double = 1.0)
+    : LassoModel =
+      new LassoWithSGDAnother(stepSize, numIterations, 0.0, miniBatchFraction).run(input)
+  }
+
   class LassoLocalUpdate(
       var localstepSize: Double,
       var localnumIterations: Int,
@@ -164,6 +187,7 @@ object PerformanceTest {
     var end = System.nanoTime
     println(s"read data ${(end-begin)/10.0e9}")
 
+    /*
     begin = System.nanoTime
     var model = LogisticRegressionWithSGD.train(data, args(3).toInt * 10, args(2).toDouble)
     end = System.nanoTime
@@ -195,9 +219,11 @@ object PerformanceTest {
     model2 = SVMLargeMemory.train(data, args(3).toInt, args(2).toDouble, 1.0)
     end = System.nanoTime
     println(s"SVM large memory total ${(end-begin)/10.0e9}")
+    */
 
     //-------------------------------------------------------------------------------------------
 
+    /*
     begin = System.nanoTime
     var model3 = LassoWithSGD.train(data, args(3).toInt * 10, args(2).toDouble, 1.0)
     end = System.nanoTime
@@ -209,10 +235,15 @@ object PerformanceTest {
     println(s"Lasso local update total ${(end-begin)/10.0e9}")
 
     begin = System.nanoTime
-    model3 = LassoLargeMemory.train(data, args(3).toInt, args(2).toDouble, 1.0)
+    val model3 = LassoLargeMemory.train(data, args(3).toInt, args(2).toDouble, 1.0)
     end = System.nanoTime
     println(s"Lasso large memory total ${(end-begin)/10.0e9}")
+    */
 
+    begin = System.nanoTime
+    var model3 = LassoWithSGDAnother.train(data, args(3).toInt * 10, args(2).toDouble, 1.0)
+    end = System.nanoTime
+    println(s"Lasso original total ${(end-begin)/10.0e9}")
     sc.stop()
   }
 }
