@@ -20,6 +20,8 @@ package org.apache.spark.mllib.optimization
 import org.apache.spark.Logging
 import org.apache.spark.rdd.RDD
 
+import breeze.linalg.{DenseVector => BDV}
+
 import scala.collection.mutable.ArrayBuffer
 import scala.util.Random
 import org.apache.spark.mllib.linalg.{Vectors, Vector}
@@ -172,14 +174,18 @@ object GradientDescentWithLargeMemory extends Logging {
           val rand = new Random(42 + i * numIterations + j)
           val sampled = iterCurrent.filter(x => rand.nextDouble() <= miniBatchFraction)
 
-          val (gradientSum, lossSum) = sampled.map { case (y, features) =>
-            val (grad, loss) = gradient.compute(features, y, weights)
-            (grad, loss)
-          }.reduce((a, b) => (Vectors.fromBreeze(a._1.toBreeze += b._1.toBreeze), a._2 + b._2))
+          val (gradientSum, lossSum) = sampled.aggregate((BDV.zeros[Double](weights.size), 0.0))(
+            seqop = (c, v) => (c, v) match { case ((grad, loss), (label, features)) =>
+              val l = gradient.compute(features, label, weights, Vectors.fromBreeze(grad))
+              (grad, loss + l)
+            },
+            combop = (c1, c2) => (c1, c2) match { case ((grad1, loss1), (grad2, loss2)) =>
+              (grad1 += grad2, loss1 + loss2)
+            })
 
           localLossHistory += lossSum / miniBatchSize + regVal
 
-          val update = updater.compute(weights, Vectors.fromBreeze(gradientSum.toBreeze :/ miniBatchSize),
+          val update = updater.compute(weights, Vectors.fromBreeze(gradientSum :/ miniBatchSize),
             stepSize, (i - 1) + numIterations + j, regParam)
 
           weights = update._1

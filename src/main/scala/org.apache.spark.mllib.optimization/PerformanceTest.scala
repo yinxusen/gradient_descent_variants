@@ -1,11 +1,11 @@
-package org.apache.spark.mllib.util
+package org.apache.spark.mllib.optimization
 
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import org.apache.spark.mllib.regression.{LassoModel, LassoWithSGD, LabeledPoint}
+import org.apache.spark.mllib.regression.{LassoModel, LassoWithSGD}
 import org.apache.spark.mllib.classification._
-import org.apache.spark.mllib.optimization._
 import org.apache.spark.mllib.regression.LabeledPoint
+import org.apache.spark.mllib.util.MLUtils
 
 object PerformanceTest {
 
@@ -187,7 +187,6 @@ object PerformanceTest {
     var end = System.nanoTime
     println(s"read data ${(end-begin)/10.0e9}")
 
-    /*
     begin = System.nanoTime
     var model = LogisticRegressionWithSGD.train(data, args(3).toInt * 10, args(2).toDouble)
     end = System.nanoTime
@@ -219,7 +218,6 @@ object PerformanceTest {
     model2 = SVMLargeMemory.train(data, args(3).toInt, args(2).toDouble, 1.0)
     end = System.nanoTime
     println(s"SVM large memory total ${(end-begin)/10.0e9}")
-    */
 
     //-------------------------------------------------------------------------------------------
 
@@ -228,7 +226,6 @@ object PerformanceTest {
     end = System.nanoTime
     println(s"Lasso original total ${(end-begin)/10.0e9}")
 
-    /*
     begin = System.nanoTime
     model3 = LassoLocalUpdate.train(data, args(3).toInt, args(2).toDouble, 1.0)
     end = System.nanoTime
@@ -238,12 +235,12 @@ object PerformanceTest {
     model3 = LassoLargeMemory.train(data, args(3).toInt, args(2).toDouble, 1.0)
     end = System.nanoTime
     println(s"Lasso large memory total ${(end-begin)/10.0e9}")
-    */
 
     begin = System.nanoTime
     model3 = LassoWithSGDAnother.train(data, args(3).toInt * 10, args(2).toDouble, 1.0)
     end = System.nanoTime
-    println(s"Lasso original total ${(end-begin)/10.0e9}")
+    println(s"Lasso SGD Another total ${(end-begin)/10.0e9}")
+
     sc.stop()
   }
 }

@@ -171,9 +171,7 @@ object GradientDescentAnother extends Logging {
       val (gradientSum, lossSum) = data.sample(false, miniBatchFraction, 42 + i)
         .aggregate((BDV.zeros[Double](weights.size), 0.0))(
           seqOp = (c, v) => (c, v) match { case ((grad, loss), (label, features)) =>
-            // val (g, l) = gradient.compute(features, label, weights)
             val l = gradient.compute(features, label, weights, Vectors.fromBreeze(grad))
-            // grad += g.toBreeze
             (grad, loss + l)
           },
           combOp = (c1, c2) => (c1, c2) match { case ((grad1, loss1), (grad2, loss2)) =>

@@ -174,11 +174,16 @@ object GradientDescentWithLocalUpdate extends Logging {
             Iterator.iterate((weights, 0.0, regVal)) {
               case (lastWeights, lastLoss, lastRegVal) =>
 
-                val (localGrad, localLoss) = tinyDataSets.map { case (y, featuresCol) =>
-                  gradient.compute(featuresCol, y, lastWeights)
-                }.reduce((a, b) => (Vectors.fromBreeze(a._1.toBreeze += b._1.toBreeze), a._2 + b._2))
+                val (localGrad, localLoss) = tinyDataSets.aggregate((BDV.zeros[Double](weights.size), 0.0))(
+                  seqop = (c, v) => (c, v) match { case ((grad, loss), (label, features)) =>
+                    val l = gradient.compute(features, label, weights, Vectors.fromBreeze(grad))
+                    (grad, loss + l)
+                  },
+                  combop = (c1, c2) => (c1, c2) match { case ((grad1, loss1), (grad2, loss2)) =>
+                    (grad1 += grad2, loss1 + loss2)
+                  })
 
-                val grad = Vectors.fromBreeze(localGrad.toBreeze :/ tinyDataSets.size.toDouble)
+                val grad = Vectors.fromBreeze(localGrad :/ tinyDataSets.size.toDouble)
                 val loss = localLoss / tinyDataSets.size
 
                 val (newWeights, newRegVal) = updater.compute(
