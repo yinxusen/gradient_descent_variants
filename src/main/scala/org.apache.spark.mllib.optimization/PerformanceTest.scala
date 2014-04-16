@@ -223,25 +223,25 @@ object PerformanceTest {
 
     //-------------------------------------------------------------------------------------------
 
-    /*
     begin = System.nanoTime
     var model3 = LassoWithSGD.train(data, args(3).toInt * 10, args(2).toDouble, 1.0)
     end = System.nanoTime
     println(s"Lasso original total ${(end-begin)/10.0e9}")
 
+    /*
     begin = System.nanoTime
     model3 = LassoLocalUpdate.train(data, args(3).toInt, args(2).toDouble, 1.0)
     end = System.nanoTime
     println(s"Lasso local update total ${(end-begin)/10.0e9}")
 
     begin = System.nanoTime
-    val model3 = LassoLargeMemory.train(data, args(3).toInt, args(2).toDouble, 1.0)
+    model3 = LassoLargeMemory.train(data, args(3).toInt, args(2).toDouble, 1.0)
     end = System.nanoTime
     println(s"Lasso large memory total ${(end-begin)/10.0e9}")
     */
 
     begin = System.nanoTime
-    var model3 = LassoWithSGDAnother.train(data, args(3).toInt * 10, args(2).toDouble, 1.0)
+    model3 = LassoWithSGDAnother.train(data, args(3).toInt * 10, args(2).toDouble, 1.0)
     end = System.nanoTime
     println(s"Lasso original total ${(end-begin)/10.0e9}")
     sc.stop()

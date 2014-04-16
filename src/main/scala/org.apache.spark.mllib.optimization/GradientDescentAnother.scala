@@ -169,13 +169,12 @@ object GradientDescentAnother extends Logging {
       // Sample a subset (fraction miniBatchFraction) of the total data
       // compute and sum up the subgradients on this subset (this is one map-reduce)
       val (gradientSum, lossSum) = data.sample(false, miniBatchFraction, 42 + i)
-        .aggregate((BSV.zeros[Double](weights.size), 0.0))(
+        .aggregate((BDV.zeros[Double](weights.size), 0.0))(
           seqOp = (c, v) => (c, v) match { case ((grad, loss), (label, features)) =>
-            val (g, l) = gradient.compute(features, label, weights)
-            // val l = gradient.compute(features, label, weights, Vectors.fromBreeze(grad))
-            grad += g.toBreeze
+            // val (g, l) = gradient.compute(features, label, weights)
+            val l = gradient.compute(features, label, weights, Vectors.fromBreeze(grad))
+            // grad += g.toBreeze
             (grad, loss + l)
-            // (grad += g.toBreeze, loss + l)
           },
           combOp = (c1, c2) => (c1, c2) match { case ((grad1, loss1), (grad2, loss2)) =>
             (grad1 += grad2, loss1 + loss2)
